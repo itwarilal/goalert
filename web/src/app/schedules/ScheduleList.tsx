@@ -65,7 +65,7 @@ export default function ScheduleList(): JSX.Element {
         loading={q.fetching}
         onCreateClick={() => setCreate(true)}
         slots={{
-          search: <Search />,
+          search: <Search placeholder='Search Schedules' />,
           list: (
             <FlatList
               emptyMessage='No results'
