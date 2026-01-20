@@ -5,6 +5,9 @@ import ButtonGroup from '@mui/material/ButtonGroup'
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 import makeStyles from '@mui/styles/makeStyles'
 import { Theme } from '@mui/material/styles'
 import _, { startCase, isEmpty, uniq, chain } from 'lodash'
@@ -66,6 +69,14 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   changeChip: {
     justifyContent: 'flex-end',
+  },
+  serviceCard: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  serviceCardContent: {
+    flexGrow: 1,
   },
 }))
 
@@ -166,90 +177,79 @@ export default function AdminConfig(): React.JSX.Element {
       )}
 
       <Grid item xs={12}>
-        {groups.map((groupID: string, index: number) => (
-          <Accordion
-            key={groupID}
-            expanded={section === groupID}
-            onChange={handleExpandChange(groupID)}
-          >
-            <AccordionSummary
-              aria-expanded={section === groupID}
-              aria-controls={`accordion-sect-${groupID}`}
-              id={`accordion-${groupID}`}
-              expandIcon={<ExpandMoreIcon />}
-            >
-              <Typography
-                component='h2'
-                variant='subtitle1'
-                className={classes.heading}
-              >
-                {formatHeading(groupID)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {hasEnable(groupID) &&
-                  (isEnabled(groupID) ? 'Enabled' : 'Disabled')}
-              </Typography>
-              {(changeCount(groupID) && (
-                <Chip
-                  className={classes.changeChip}
-                  size='small'
-                  label={`${changeCount(groupID)} unsaved change${
-                    changeCount(groupID) === 1 ? '' : 's'
-                  }`}
-                />
-              )) ||
-                null}
-            </AccordionSummary>
-            <Divider />
-            <AccordionDetails
-              id={`accordion-sect-${groupID}`}
-              aria-labelledby={`accordion-${groupID}`}
-              className={classes.accordionDetails}
-              role='region'
-            >
-              <Form className={classes.form}>
-                <AdminSection
-                  value={values}
-                  onChange={(id: string, value: null | string) =>
-                    updateValue(id, value)
-                  }
-                  fields={configValues
-                    .filter(
-                      (f: ConfigValue) => f.id.split('.')[0] === groups[index],
-                    )
-                    .map((f: ConfigValue) => ({
-                      id: f.id,
-                      label: formatHeading(_.last(f.id.split('.'))),
-                      description: f.description,
-                      password: f.password,
-                      type: f.type,
-                      value: f.value,
-                      deprecated: f.deprecated,
-                    }))}
-                />
-              </Form>
-              {hintGroups[groupID] &&
-                hintGroups[groupID].map((h: ConfigHint) => (
-                  <TextField
-                    key={h.id}
-                    label={hintName(h.id)}
-                    value={h.value}
-                    variant='filled'
-                    margin='none'
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <CopyText value={h.value} placement='left' asURL />
-                        </InputAdornment>
-                      ),
-                    }}
-                    fullWidth
+        <Grid container spacing={2}>
+          {groups.map((groupID: string, index: number) => {
+            const colIndex = index % 3
+            return (
+              <Grid item xs={12} md={4} key={groupID}>
+                <Card className={classes.serviceCard}>
+                  <CardHeader
+                    title={formatHeading(groupID)}
+                    subheader={
+                      hasEnable(groupID) &&
+                      (isEnabled(groupID) ? 'Enabled' : 'Disabled')
+                    }
+                    action={
+                      (changeCount(groupID) && (
+                        <Chip
+                          className={classes.changeChip}
+                          size='small'
+                          label={`${changeCount(groupID)} unsaved change${
+                            changeCount(groupID) === 1 ? '' : 's'
+                          }`}
+                        />
+                      )) ||
+                      null
+                    }
                   />
-                ))}
-              {groupID === 'Slack' && <SlackActions />}
-            </AccordionDetails>
-          </Accordion>
-        ))}
+                  <Divider />
+                  <CardContent className={classes.serviceCardContent}>
+                    <Form className={classes.form}>
+                      <AdminSection
+                        value={values}
+                        onChange={(id: string, value: null | string) =>
+                          updateValue(id, value)
+                        }
+                        fields={configValues
+                          .filter(
+                            (f: ConfigValue) => f.id.split('.')[0] === groups[index],
+                          )
+                          .map((f: ConfigValue) => ({
+                            id: f.id,
+                            label: formatHeading(_.last(f.id.split('.'))),
+                            description: f.description,
+                            password: f.password,
+                            type: f.type,
+                            value: f.value,
+                            deprecated: f.deprecated,
+                          }))}
+                      />
+                    </Form>
+                    {hintGroups[groupID] &&
+                      hintGroups[groupID].map((h: ConfigHint) => (
+                        <TextField
+                          key={h.id}
+                          label={hintName(h.id)}
+                          value={h.value}
+                          variant='filled'
+                          margin='none'
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <CopyText value={h.value} placement='left' asURL />
+                              </InputAdornment>
+                            ),
+                          }}
+                          fullWidth
+                        />
+                      ))}
+                    {groupID === 'Slack' && <SlackActions />}
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          })}
+        </Grid>
       </Grid>
     </Grid>
   )
