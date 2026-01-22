@@ -169,11 +169,11 @@ export default function AdminConfig(): React.JSX.Element {
         {groups.map((groupID: string, index: number) => (
           <Accordion
             key={groupID}
-            expanded={section === groupID}
+            expanded={false}
             onChange={handleExpandChange(groupID)}
           >
             <AccordionSummary
-              aria-expanded={section === groupID}
+              aria-expanded={false}
               aria-controls={`accordion-sect-${groupID}`}
               id={`accordion-${groupID}`}
               expandIcon={<ExpandMoreIcon />}
