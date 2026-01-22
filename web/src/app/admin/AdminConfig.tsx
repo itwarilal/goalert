@@ -25,6 +25,8 @@ import Spinner from '../loading/components/Spinner'
 import { GenericError } from '../error-pages'
 import { ConfigValue, ConfigHint } from '../../schema'
 import SlackActions from './SlackActions'
+import CompList from '../lists/CompList'
+import { CompListSection, CompListItemText } from '../lists/CompListItems'
 
 const query = gql`
   query getConfig {
@@ -121,9 +123,6 @@ export default function AdminConfig(): React.JSX.Element {
 
   const hintName = (id: string): string => startCase(id.split('.')[1])
 
-  const handleExpandChange = (id: string) => () =>
-    setSection(id === section ? false : id)
-
   const hasEnable = (sectionID: string): boolean =>
     configValues.some((v) => v.id === sectionID + '.Enable')
 
@@ -166,90 +165,87 @@ export default function AdminConfig(): React.JSX.Element {
       )}
 
       <Grid item xs={12}>
-        {groups.map((groupID: string, index: number) => (
-          <Accordion
-            key={groupID}
-            expanded={section === groupID}
-            onChange={handleExpandChange(groupID)}
-          >
-            <AccordionSummary
-              aria-expanded={section === groupID}
-              aria-controls={`accordion-sect-${groupID}`}
-              id={`accordion-${groupID}`}
-              expandIcon={<ExpandMoreIcon />}
+        <CompList>
+          {groups.map((groupID: string, index: number) => (
+            <CompListSection
+              key={groupID}
+              title={formatHeading(groupID)}
+              subText={
+                hasEnable(groupID) &&
+                (isEnabled(groupID) ? 'Enabled' : 'Disabled')
+              }
+              defaultOpen={index === 0}
             >
-              <Typography
-                component='h2'
-                variant='subtitle1'
-                className={classes.heading}
-              >
-                {formatHeading(groupID)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {hasEnable(groupID) &&
-                  (isEnabled(groupID) ? 'Enabled' : 'Disabled')}
-              </Typography>
-              {(changeCount(groupID) && (
-                <Chip
-                  className={classes.changeChip}
-                  size='small'
-                  label={`${changeCount(groupID)} unsaved change${
-                    changeCount(groupID) === 1 ? '' : 's'
-                  }`}
-                />
-              )) ||
-                null}
-            </AccordionSummary>
-            <Divider />
-            <AccordionDetails
-              id={`accordion-sect-${groupID}`}
-              aria-labelledby={`accordion-${groupID}`}
-              className={classes.accordionDetails}
-              role='region'
-            >
-              <Form className={classes.form}>
-                <AdminSection
-                  value={values}
-                  onChange={(id: string, value: null | string) =>
-                    updateValue(id, value)
-                  }
-                  fields={configValues
-                    .filter(
-                      (f: ConfigValue) => f.id.split('.')[0] === groups[index],
-                    )
-                    .map((f: ConfigValue) => ({
-                      id: f.id,
-                      label: formatHeading(_.last(f.id.split('.'))),
-                      description: f.description,
-                      password: f.password,
-                      type: f.type,
-                      value: f.value,
-                      deprecated: f.deprecated,
-                    }))}
-                />
-              </Form>
+              {configValues
+                .filter(
+                  (f: ConfigValue) => f.id.split('.')[0] === groups[index],
+                )
+                .map((f: ConfigValue) => {
+                  const fieldId = f.id
+                  const label = formatHeading(_.last(f.id.split('.')!) || '')
+                  const description = f.description
+                  const currentValue = values[fieldId] !== undefined ? values[fieldId] : f.value
+                  
+                  return (
+                    <CompListItemText
+                      key={fieldId}
+                      title={label}
+                      subText={description}
+                      action={
+                        <Form>
+                          <AdminSection
+                            value={values}
+                            onChange={(id: string, value: null | string) =>
+                              updateValue(id, value)
+                            }
+                            fields={[{
+                              id: f.id,
+                              label: label,
+                              description: f.description,
+                              password: f.password,
+                              type: f.type,
+                              value: f.value,
+                              deprecated: f.deprecated,
+                            }]}
+                          />
+                        </Form>
+                      }
+                    />
+                  )
+                })}
+              
               {hintGroups[groupID] &&
                 hintGroups[groupID].map((h: ConfigHint) => (
-                  <TextField
+                  <CompListItemText
                     key={h.id}
-                    label={hintName(h.id)}
-                    value={h.value}
-                    variant='filled'
-                    margin='none'
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <CopyText value={h.value} placement='left' asURL />
-                        </InputAdornment>
-                      ),
-                    }}
-                    fullWidth
+                    title={hintName(h.id)}
+                    action={
+                      <TextField
+                        value={h.value}
+                        variant='filled'
+                        margin='none'
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position='end'>
+                              <CopyText value={h.value} placement='left' asURL />
+                            </InputAdornment>
+                          ),
+                        }}
+                        fullWidth
+                      />
+                    }
                   />
                 ))}
-              {groupID === 'Slack' && <SlackActions />}
-            </AccordionDetails>
-          </Accordion>
-        ))}
+              
+              {groupID === 'Slack' && (
+                <CompListItemText
+                  title='Slack Actions'
+                  action={<SlackActions />}
+                />
+              )}
+            </CompListSection>
+          ))}
+        </CompList>
       </Grid>
     </Grid>
   )
