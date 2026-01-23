@@ -19,6 +19,9 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Card,
+  CardHeader,
+  CardContent,
 } from '@mui/material'
 import CopyText from '../util/CopyText'
 import Spinner from '../loading/components/Spinner'
@@ -66,6 +69,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   changeChip: {
     justifyContent: 'flex-end',
+  },
+  card: {
+    height: '100%',
+  },
+  cardContent: {
+    padding: theme.spacing(2),
   },
 }))
 
@@ -165,48 +174,31 @@ export default function AdminConfig(): React.JSX.Element {
         />
       )}
 
-      <Grid item xs={12}>
-        {groups.map((groupID: string, index: number) => (
-          <Accordion
-            key={groupID}
-            expanded={section === groupID}
-            onChange={handleExpandChange(groupID)}
-          >
-            <AccordionSummary
-              aria-expanded={section === groupID}
-              aria-controls={`accordion-sect-${groupID}`}
-              id={`accordion-${groupID}`}
-              expandIcon={<ExpandMoreIcon />}
-            >
-              <Typography
-                component='h2'
-                variant='subtitle1'
-                className={classes.heading}
-              >
-                {formatHeading(groupID)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {hasEnable(groupID) &&
-                  (isEnabled(groupID) ? 'Enabled' : 'Disabled')}
-              </Typography>
-              {(changeCount(groupID) && (
-                <Chip
-                  className={classes.changeChip}
-                  size='small'
-                  label={`${changeCount(groupID)} unsaved change${
-                    changeCount(groupID) === 1 ? '' : 's'
-                  }`}
-                />
-              )) ||
-                null}
-            </AccordionSummary>
-            <Divider />
-            <AccordionDetails
-              id={`accordion-sect-${groupID}`}
-              aria-labelledby={`accordion-${groupID}`}
-              className={classes.accordionDetails}
-              role='region'
-            >
+      {groups.map((groupID: string, index: number) => (
+        <Grid item xs={12} sm={6} md={4} key={groupID}>
+          <Card className={classes.card}>
+            <CardHeader
+              title={formatHeading(groupID)}
+              subheader={
+                hasEnable(groupID)
+                  ? isEnabled(groupID)
+                    ? 'Enabled'
+                    : 'Disabled'
+                  : ''
+              }
+              action={
+                changeCount(groupID) ? (
+                  <Chip
+                    className={classes.changeChip}
+                    size='small'
+                    label={`${changeCount(groupID)} unsaved change${
+                      changeCount(groupID) === 1 ? '' : 's'
+                    }`}
+                  />
+                ) : null
+              }
+            />
+            <CardContent className={classes.cardContent}>
               <Form className={classes.form}>
                 <AdminSection
                   value={values}
@@ -247,10 +239,10 @@ export default function AdminConfig(): React.JSX.Element {
                   />
                 ))}
               {groupID === 'Slack' && <SlackActions />}
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
     </Grid>
   )
 }
