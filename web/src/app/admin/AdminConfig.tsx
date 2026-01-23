@@ -5,19 +5,18 @@ import ButtonGroup from '@mui/material/ButtonGroup'
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
+import Card from '@mui/material/Card'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
 import makeStyles from '@mui/styles/makeStyles'
 import { Theme } from '@mui/material/styles'
 import _, { startCase, isEmpty, uniq, chain } from 'lodash'
 import AdminSection from './AdminSection'
 import AdminDialog from './AdminDialog'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Form } from '../forms'
 import {
   InputAdornment,
   TextField,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Chip,
 } from '@mui/material'
 import CopyText from '../util/CopyText'
@@ -44,7 +43,7 @@ const query = gql`
 `
 
 const useStyles = makeStyles((theme: Theme) => ({
-  accordionDetails: {
+  cardContent: {
     padding: 0,
     display: 'block',
   },
@@ -67,6 +66,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   changeChip: {
     justifyContent: 'flex-end',
   },
+  card: {
+    marginBottom: theme.spacing(2),
+  },
 }))
 
 interface ConfigValues {
@@ -85,7 +87,6 @@ export default function AdminConfig(): React.JSX.Element {
   const classes = useStyles()
   const [confirm, setConfirm] = useState(false)
   const [values, setValues] = useState({})
-  const [section, setSection] = useState(false as false | string)
 
   const [{ data, fetching, error }] = useQuery({ query })
 
@@ -120,9 +121,6 @@ export default function AdminConfig(): React.JSX.Element {
     .value()
 
   const hintName = (id: string): string => startCase(id.split('.')[1])
-
-  const handleExpandChange = (id: string) => () =>
-    setSection(id === section ? false : id)
 
   const hasEnable = (sectionID: string): boolean =>
     configValues.some((v) => v.id === sectionID + '.Enable')
@@ -165,48 +163,39 @@ export default function AdminConfig(): React.JSX.Element {
         />
       )}
 
-      <Grid item xs={12}>
-        {groups.map((groupID: string, index: number) => (
-          <Accordion
-            key={groupID}
-            expanded={section === groupID}
-            onChange={handleExpandChange(groupID)}
-          >
-            <AccordionSummary
-              aria-expanded={section === groupID}
-              aria-controls={`accordion-sect-${groupID}`}
-              id={`accordion-${groupID}`}
-              expandIcon={<ExpandMoreIcon />}
-            >
-              <Typography
-                component='h2'
-                variant='subtitle1'
-                className={classes.heading}
-              >
-                {formatHeading(groupID)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {hasEnable(groupID) &&
-                  (isEnabled(groupID) ? 'Enabled' : 'Disabled')}
-              </Typography>
-              {(changeCount(groupID) && (
-                <Chip
-                  className={classes.changeChip}
-                  size='small'
-                  label={`${changeCount(groupID)} unsaved change${
-                    changeCount(groupID) === 1 ? '' : 's'
-                  }`}
-                />
-              )) ||
-                null}
-            </AccordionSummary>
+      {groups.map((groupID: string, index: number) => (
+        <Grid item xs={12} key={groupID}>
+          <Card className={classes.card}>
+            <CardHeader
+              title={
+                <Typography
+                  component='h2'
+                  variant='subtitle1'
+                  className={classes.heading}
+                >
+                  {formatHeading(groupID)}
+                </Typography>
+              }
+              subheader={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Typography className={classes.secondaryHeading}>
+                    {hasEnable(groupID) &&
+                      (isEnabled(groupID) ? 'Enabled' : 'Disabled')}
+                  </Typography>
+                  {changeCount(groupID) > 0 && (
+                    <Chip
+                      className={classes.changeChip}
+                      size='small'
+                      label={`${changeCount(groupID)} unsaved change${
+                        changeCount(groupID) === 1 ? '' : 's'
+                      }`}
+                    />
+                  )}
+                </div>
+              }
+            />
             <Divider />
-            <AccordionDetails
-              id={`accordion-sect-${groupID}`}
-              aria-labelledby={`accordion-${groupID}`}
-              className={classes.accordionDetails}
-              role='region'
-            >
+            <CardContent className={classes.cardContent}>
               <Form className={classes.form}>
                 <AdminSection
                   value={values}
@@ -247,10 +236,10 @@ export default function AdminConfig(): React.JSX.Element {
                   />
                 ))}
               {groupID === 'Slack' && <SlackActions />}
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
     </Grid>
   )
 }
