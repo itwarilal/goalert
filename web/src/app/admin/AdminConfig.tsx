@@ -67,6 +67,26 @@ const useStyles = makeStyles((theme: Theme) => ({
   changeChip: {
     justifyContent: 'flex-end',
   },
+  '& .MuiList-root': {
+    '& .MuiListItem-root:nth-child(even)': {
+      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5',
+      '& .MuiListItemText-primary': {
+        color: theme.palette.mode === 'dark' ? theme.palette.text.primary : '#000',
+      },
+      '& .MuiListItemText-secondary': {
+        color: theme.palette.mode === 'dark' ? theme.palette.text.secondary : '#666',
+      },
+    },
+    '& .MuiListItem-root:nth-child(odd)': {
+      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.05)' : '#ffffff',
+      '& .MuiListItemText-primary': {
+        color: theme.palette.mode === 'dark' ? theme.palette.text.primary : '#000',
+      },
+      '& .MuiListItemText-secondary': {
+        color: theme.palette.mode === 'dark' ? theme.palette.text.secondary : '#666',
+      },
+    },
+  },
 }))
 
 interface ConfigValues {
@@ -165,7 +185,7 @@ export default function AdminConfig(): React.JSX.Element {
         />
       )}
 
-      <Grid item xs={12}>
+      <Grid item xs={12} className={classes.form}>
         {groups.map((groupID: string, index: number) => (
           <Accordion
             key={groupID}
