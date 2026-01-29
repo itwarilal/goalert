@@ -67,7 +67,36 @@ const useStyles = makeStyles((theme: Theme) => ({
   changeChip: {
     justifyContent: 'flex-end',
   },
-}))
+  alternatingRow: {
+    '&:nth-child(even)': {
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? theme.palette.primary.dark + '15'
+        : theme.palette.primary.light + '20',
+      '& .MuiListItemText-primary': {
+        color: theme.palette.mode === 'dark'
+          ? theme.palette.primary.contrastText
+          : theme.palette.text.primary,
+        fontWeight: 500,
+      },
+      '& .MuiListItemText-secondary': {
+        color: theme.palette.mode === 'dark'
+          ? theme.palette.grey[300]
+          : theme.palette.text.secondary,
+      },
+    },
+    '&:nth-child(odd)': {
+      backgroundColor: theme.palette.mode === 'dark'
+        ? theme.palette.background.paper
+        : theme.palette.background.default,
+      '& .MuiListItemText-primary': {
+        color: theme.palette.text.primary,
+      },
+      '& .MuiListItemText-secondary': {
+        color: theme.palette.text.secondary,
+      },
+    },
+  },
+})))
 
 interface ConfigValues {
   [id: string]: string
@@ -165,7 +194,7 @@ export default function AdminConfig(): React.JSX.Element {
         />
       )}
 
-      <Grid item xs={12}>
+      <Grid item xs={12} className={classes.alternatingRow}>
         {groups.map((groupID: string, index: number) => (
           <Accordion
             key={groupID}
